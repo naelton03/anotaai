@@ -19,7 +19,7 @@ class ChampionshipManagerApp extends StatelessWidget {
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
         ),
-        cardTheme: const CardThemeData(
+        cardTheme: const CardTheme(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20)),

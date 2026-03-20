@@ -332,7 +332,7 @@ class _OperationsTab extends StatelessWidget {
                 .map(
                   (stage) => ExpansionTile(
                     title: Text('${stage.name} • ${stage.type}'),
-                    subtitle: Text('Caminho de classificação configurável'),
+                    subtitle: const Text('Caminho de classificação configurável'),
                     children: [
                       Align(
                         alignment: Alignment.centerRight,
@@ -466,12 +466,12 @@ class _StatsTab extends StatelessWidget {
                 ],
               ),
             const SizedBox(height: 20),
-            SectionCard(
+            const SectionCard(
               title: 'Exportação e relatórios',
-              child: Wrap(
+              child: const Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: const [
+                children: [
                   Chip(label: Text('Exportar PDF (próxima etapa)')),
                   Chip(label: Text('Exportar CSV (próxima etapa)')),
                   Chip(label: Text('Dashboard visual com gráficos')),
