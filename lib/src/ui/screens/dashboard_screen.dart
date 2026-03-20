@@ -17,6 +17,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
+  static const _titles = ['Meus campeonatos', 'Gerenciar', 'Estatísticas', 'Configurações'];
+  static const _navItems = [
+    (icon: Icons.home_rounded, label: 'Home'),
+    (icon: Icons.swap_horiz_rounded, label: 'Campeonatos'),
+    (icon: Icons.emoji_events_outlined, label: 'Tabelas'),
+    (icon: Icons.settings_outlined, label: 'Menu'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final repo = context.watch<ChampionshipRepository>();
@@ -27,59 +35,219 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const _SettingsTab(),
     ];
 
-    if (repo.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 900;
-        final currentPage = Padding(
-          padding: const EdgeInsets.all(20),
-          child: pages[_currentIndex],
-        );
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('AnotaAI MVP'),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F6FF),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF5F8FF), Color(0xFFE9F0FF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          body: SafeArea(
-            child: isCompact
-                ? currentPage
-                : Row(
-                    children: [
-                      NavigationRail(
-                        selectedIndex: _currentIndex,
-                        onDestinationSelected: (value) => setState(() => _currentIndex = value),
-                        labelType: NavigationRailLabelType.all,
-                        destinations: const [
-                          NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), label: Text('Resumo')),
-                          NavigationRailDestination(icon: Icon(Icons.sports_soccer_outlined), label: Text('Operação')),
-                          NavigationRailDestination(icon: Icon(Icons.bar_chart_outlined), label: Text('Estatísticas')),
-                          NavigationRailDestination(icon: Icon(Icons.settings_outlined), label: Text('Ajustes')),
-                        ],
+        ),
+        child: SafeArea(
+          child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final shellWidth = constraints.maxWidth > 520 ? 430.0 : constraints.maxWidth - 32;
+                return Container(
+                  width: shellWidth,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F7FF),
+                    borderRadius: BorderRadius.circular(36),
+                    border: Border.all(color: const Color(0xFFD8E4FF)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x220A3B8F),
+                        blurRadius: 36,
+                        offset: Offset(0, 18),
                       ),
-                      const VerticalDivider(width: 1),
-                      Expanded(child: currentPage),
                     ],
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(36),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF3D8CFF), Color(0xFF2E6CFF)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  _HeaderCircle(
+                                    icon: _currentIndex == 0 ? Icons.emoji_events_rounded : Icons.arrow_back_ios_new_rounded,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _titles[_currentIndex],
+                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const _HeaderCircle(icon: Icons.settings_outlined),
+                                  const SizedBox(width: 8),
+                                  const _HeaderCircle(icon: Icons.more_vert),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              if (repo.isLoading)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 32),
+                                  child: CircularProgressIndicator(color: Colors.white),
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _TopFilterPill(
+                                        label: repo.selectedChampionship?.name ?? 'Campeonato Principal',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _TopMiniPill(label: 'S2'),
+                                    const SizedBox(width: 10),
+                                    const _HeaderCircle(icon: Icons.view_list_rounded, compact: true),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: repo.isLoading
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+                                  child: pages[_currentIndex],
+                                ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(10, 8, 10, 14),
+                          color: Colors.white.withOpacity(0.7),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: List.generate(_navItems.length, (index) {
+                              final item = _navItems[index];
+                              final selected = index == _currentIndex;
+                              return InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () => setState(() => _currentIndex = index),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        item.icon,
+                                        color: selected ? const Color(0xFF2E6CFF) : const Color(0xFF92A3CF),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        item.label,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: selected ? const Color(0xFF2E6CFF) : const Color(0xFF92A3CF),
+                                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-          bottomNavigationBar: isCompact
-              ? NavigationBar(
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: (value) => setState(() => _currentIndex = value),
-                  destinations: const [
-                    NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Resumo'),
-                    NavigationDestination(icon: Icon(Icons.sports_soccer_outlined), label: 'Operação'),
-                    NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: 'Stats'),
-                    NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
-                  ],
-                )
-              : null,
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderCircle extends StatelessWidget {
+  const _HeaderCircle({required this.icon, this.compact = false});
+
+  final IconData icon;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: compact ? 38 : 40,
+      height: compact ? 38 : 40,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.18),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+}
+
+class _TopFilterPill extends StatelessWidget {
+  const _TopFilterPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.96),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF35508E)),
+            ),
+          ),
+          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF6E83B7)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopMiniPill extends StatelessWidget {
+  const _TopMiniPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4B89FF),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+      ),
     );
   }
 }
@@ -100,6 +268,7 @@ class _OverviewTab extends StatelessWidget {
         final compact = constraints.maxWidth < 1100;
         final summaryCard = SectionCard(
           title: championship.name,
+          subtitle: 'Resumo do campeonato',
           action: FilledButton.icon(
             onPressed: () => _showCreateChampionshipDialog(context),
             icon: const Icon(Icons.add),
@@ -128,6 +297,7 @@ class _OverviewTab extends StatelessWidget {
 
         final nextMatchesCard = SectionCard(
           title: 'Próximas partidas',
+          subtitle: 'Acompanhe os próximos confrontos',
           child: Column(
             children: repo.nextMatches
                 .map(
@@ -145,6 +315,7 @@ class _OverviewTab extends StatelessWidget {
 
         final standingsCard = SectionCard(
           title: 'Classificação ao vivo',
+          subtitle: 'Pontuação atualizada automaticamente',
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
@@ -206,6 +377,7 @@ class _OperationsTab extends StatelessWidget {
       children: [
         SectionCard(
           title: 'Equipes e jogadores',
+          subtitle: 'Gerencie elenco, grupos e importação',
           action: Wrap(
             spacing: 8,
             children: [
@@ -312,6 +484,7 @@ class _OperationsTab extends StatelessWidget {
         const SizedBox(height: 20),
         SectionCard(
           title: 'Fases, grupos, rodadas e partidas',
+          subtitle: 'Monte a estrutura do torneio',
           action: Wrap(
             spacing: 8,
             children: [
@@ -387,6 +560,7 @@ class _StatsTab extends StatelessWidget {
         final compact = constraints.maxWidth < 1000;
         final rankingCard = SectionCard(
           title: 'Ranking de equipes',
+          subtitle: 'Tabela geral do campeonato',
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
@@ -420,6 +594,7 @@ class _StatsTab extends StatelessWidget {
 
         final scorersCard = SectionCard(
           title: 'Artilharia',
+          subtitle: 'Goleadores em destaque',
           child: Column(
             children: repo.topScorers
                 .map(
@@ -435,6 +610,7 @@ class _StatsTab extends StatelessWidget {
 
         final assistsCard = SectionCard(
           title: 'Assistências',
+          subtitle: 'Líderes de criação',
           child: Column(
             children: repo.topAssists
                 .map(
@@ -468,6 +644,7 @@ class _StatsTab extends StatelessWidget {
             const SizedBox(height: 20),
             const SectionCard(
               title: 'Exportação e relatórios',
+              subtitle: 'Integrações e relatórios visuais',
               child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -498,6 +675,7 @@ class _SettingsTab extends StatelessWidget {
       children: [
         SectionCard(
           title: 'Personalização e privacidade',
+          subtitle: 'Ajustes visuais e controle de acesso',
           child: Column(
             children: [
               SwitchListTile(
