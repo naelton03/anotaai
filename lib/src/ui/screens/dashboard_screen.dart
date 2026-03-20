@@ -468,7 +468,7 @@ class _StatsTab extends StatelessWidget {
             const SizedBox(height: 20),
             const SectionCard(
               title: 'Exportação e relatórios',
-              child: const Wrap(
+              child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
